@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -1675,9 +1675,14 @@
       const initialize = async () => {
         if (!window.Cesium) throw new Error("CesiumJS 未能加载");
         const endpoint = {
-          mode: "static-local",
-          url: localModelUrl,
-          environment: {},
+          mode: "client-ion",
+          modelMode: "static-local",
+          accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NjY3NTgxZC00ODQwLTRkMDYtODZmYi04ODRmZDBiOTU0MTgiLCJpZCI6NDI0NzExLCJzdWIiOiJjc2gxNjU0OTIzMzY5IiwiaXNzIjoiaHR0cHM6Ly9hcGkuY2VzaXVtLmNvbSIsImF1ZCI6Iue6ouWhmOWFrOW8gOe9keermSIsImlhdCI6MTc4NTk5NjgzNn0.2rKgAVoP8NTvQPbaERxuxSMTYOd9i-ukkDRamcXbu1Q",
+          assetId: 4908525,
+          environment: {
+            terrainAssetId: 1,
+            imageryAssetId: 2,
+          },
         };
         if (endpoint.mode === "client-ion") {
           Cesium.Ion.defaultAccessToken = endpoint.accessToken;
@@ -1755,7 +1760,7 @@
           dynamicScreenSpaceError: true,
           skipLevelOfDetail: false,
         };
-        const ionTilesetPromise = endpoint.mode === "client-ion"
+        const ionTilesetPromise = endpoint.modelMode !== "static-local" && endpoint.mode === "client-ion"
           ? Cesium.Cesium3DTileset.fromIonAssetId(Number(endpoint.assetId), tilesetOptions)
           : Cesium.Cesium3DTileset.fromUrl(endpointResource(endpoint), tilesetOptions);
         const tilesetPromise = withTimeout(
@@ -1763,7 +1768,7 @@
           12000,
           "Cesium在线高斯模型连接超时",
         ).then((loadedTileset) => {
-          body.dataset.modelSource = endpoint.mode === "static-local" ? "local-static" : "cesium-ion";
+          body.dataset.modelSource = endpoint.modelMode === "static-local" ? "local-static" : "cesium-ion";
           return loadedTileset;
         }).catch(async (error) => {
           console.warn("Cesium在线高斯模型加载失败，切换到本地高斯模型。", error);
